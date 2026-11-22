@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Andika — pay & record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ec; --card:#ffffff; --ink:#17231d; --muted:#6b756f; --line:#e6e1d6;
+    --green:#1f5e46; --green-2:#2f7a5d; --green-soft:#e3efe8;
+    --amber:#f2b632; --amber-soft:#fdf2d6; --red:#b3402e; --red-soft:#f8e3de;
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#101613; --card:#18211c; --ink:#eef2ee; --muted:#98a39c; --line:#26312b;
+      --green:#7fd1ac; --green-2:#5fb991; --green-soft:#1d2e26; --amber:#f2b632; --amber-soft:#2e2715;
+      --red:#ef8a76; --red-soft:#3a201b; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-size:16px}
+  body{padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom))}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none}
+  .wrap{max-width:520px;margin:0 auto;padding:16px 16px 24px}
+  header{display:flex;align-items:center;justify-content:space-between;margin:4px 0 16px}
+  .brand{font-weight:800;font-size:22px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .brand i{width:28px;height:28px;border-radius:9px;background:var(--green);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+  .streak{background:var(--amber-soft);color:var(--ink);padding:6px 12px;border-radius:99px;font-size:13px;font-weight:600}
+  .banner{font-size:13px;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+  .hero{background:var(--green);color:#fff;border-radius:var(--radius);padding:18px;margin-bottom:16px}
+  @media (prefers-color-scheme: dark){ .hero{background:#1f5e46} }
+  .hero small{opacity:.8;font-size:13px}
+  .hero .big{font-size:32px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}
+  .hero .row{display:flex;gap:18px;font-size:13px;opacity:.92}
+  .hero b{display:block;font-size:16px}
+  .nudge{display:flex;align-items:center;gap:12px;background:var(--amber-soft);border-radius:14px;padding:12px 14px;margin-bottom:16px;font-size:14px}
+  .nudge button{margin-left:auto;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:10px;font-weight:600;font-size:13px;white-space:nowrap}
+  h2{font-size:15px;margin:20px 2px 10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:left;min-height:92px;display:flex;flex-direction:column;justify-content:space-between}
+  .tile:active{transform:scale(.98)}
+  .tile .ic{font-size:22px}
+  .tile .nm{font-weight:700;font-size:15px;line-height:1.25}
+  .tile .cd{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .quick{width:100%;background:var(--card);border:1.5px solid var(--green);color:var(--green);border-radius:16px;padding:14px;font-weight:700;margin-top:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .bar{margin:10px 0}
+  .bar .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+  .bar .tr{height:8px;border-radius:9px;background:var(--line);overflow:hidden}
+  .bar .fl{height:100%;background:var(--green-2);border-radius:9px}
+  .day{font-size:13px;color:var(--muted);margin:16px 4px 6px;display:flex;justify-content:space-between}
+  .tx{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:6px;width:100%;text-align:left}
+  .tx .em{width:38px;height:38px;border-radius:12px;background:var(--green-soft);display:grid;place-items:center;font-size:18px;flex:none}
+  .tx .mid{flex:1;min-width:0}
+  .tx .t1{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tx .t2{font-size:12px;color:var(--muted)}
+  .tx .amt{font-weight:700}
+  .pill{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--amber-soft);margin-left:6px}
+  .monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .monthnav button{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:18px}
+  .monthnav b{font-size:17px}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:14px}
+  nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:5}
+  nav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:600;padding:4px 18px}
+  nav button span{font-size:20px}
+  nav button.on{color:var(--green)}
+  /* sheet */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:10;align-items:flex-end;justify-content:center}
+  .scrim.open{display:flex}
+  .sheet{background:var(--bg);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:up .2s ease-out}
+  @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .sheet h3{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
+  .sheet .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+  input,select,textarea{width:100%;padding:13px 14px;border-radius:13px;border:1px solid var(--line);background:var(--card);font-size:16px;outline:none}
+  input:focus,textarea:focus{border-color:var(--green-2)}
+  .amtin{font-size:28px;font-weight:800;letter-spacing:-.02em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{padding:8px 11px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:14px}
+  .chip.on{background:var(--green);border-color:var(--green);color:#fff}
+  @media (prefers-color-scheme: dark){ .chip.on{color:#0f1a14} }
+  .btn{width:100%;padding:15px;border-radius:14px;font-weight:700;font-size:16px;margin-top:10px}
+  .btn.pri{background:var(--green);color:#fff}
+  @media (prefers-color-scheme: dark){ .btn.pri{color:#0f1a14} }
+  .btn.sec{background:var(--card);border:1px solid var(--line)}
+  .btn.ghost{color:var(--muted);font-weight:600;font-size:14px}
+  .btn.danger{color:var(--red);background:var(--red-soft)}
+  .ask{background:var(--amber-soft);border-radius:16px;padding:14px;margin:4px 0 6px;display:flex;gap:10px;align-items:flex-start;font-size:14px}
+  .ask b{display:block;font-size:16px;margin-bottom:2px}
+  .ussd{font-family:ui-monospace,monospace;font-size:20px;font-weight:700;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;word-break:break-all;margin:10px 0}
+  a.btn{display:block;text-align:center;text-decoration:none}
+  .hint{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:10px}
+  .set-row{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+  .set-row:last-child{border:0}
+  .set-row .mid{flex:1;min-width:0}
+  .set-row .cd{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+  .set-row button{padding:8px 12px;border-radius:10px;background:var(--green-soft);font-size:13px;font-weight:600}
+  .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i>A</i>Andika</div>
+    <div class="streak" id="streak">🔥 0 days</div>
+  </header>
+  <div id="banner" class="banner" style="display:none"></div>
+  <main id="view"></main>
+</div>
+
+<nav>
+  <button data-tab="pay" class="on"><span>💸</span>Pay</button>
+  <button data-tab="log"><span>📒</span>Spending</button>
+  <button data-tab="settings"><span>⚙️</span>Settings</button>
+</nav>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- constants ---------- */
+const CATS = [
+  {k:"Food & groceries", e:"🛒"}, {k:"Transport", e:"🚌"}, {k:"Airtime & data", e:"📶"},
+  {k:"Utilities", e:"💡"}, {k:"Rent & housing", e:"🏠"}, {k:"Family & friends", e:"👨‍👩‍👦"},
+  {k:"School & kids", e:"🎒"}, {k:"Health", e:"🩺"}, {k:"Construction", e:"🧱"},
+  {k:"Business", e:"💼"}, {k:"Fees & taxes", e:"🧾"}, {k:"Eating out", e:"🍽️"},
+  {k:"Personal", e:"👕"}, {k:"Gifts & contributions", e:"🎁"}, {k:"Savings & investments", e:"📈"},
+  {k:"Other", e:"•"}
+];
+const counted = t => !t.status || t.status==="done";
+const NATIVE = window.AndroidBridge || null;
+const catEmoji = k => (CATS.find(c=>c.k===k)||{e:"•"}).e;
+const DEFAULT_SHORTCUTS = [
+  {id:"send",    name:"Send money",          ic:"↗️", tpl:"*182*1*1*{phone}*{amount}#",   cat:"Family & friends"},
+  {id:"momopay", name:"Pay merchant (MoMoPay)", ic:"🏪", tpl:"*182*8*1*{code}*{amount}#",  cat:"Food & groceries"},
+  {id:"airtime", name:"Buy airtime",          ic:"📶", tpl:"*182*2*1*1*1*{amount}#",     cat:"Airtime & data"},
+  {id:"power",   name:"Electricity (Cash Power)", ic:"💡", tpl:"*182*2*2*1*{meter}*{amount}#", cat:"Utilities"},
+  {id:"irembo",  name:"Pay Irembo bill",      ic:"🧾", tpl:"*182*3*7*{billid}#",         cat:"Fees & taxes"},
+  {id:"menu",    name:"Open MoMo menu",       ic:"📱", tpl:"*182#",                      cat:"Other"}
+];
+const FIELD_LABELS = {phone:"Phone number", code:"Merchant code", meter:"Meter number", billid:"Irembo bill ID", amount:"Amount (RWF)", account:"Account number"};
+const METHODS = ["MoMo","Cash","Card","Bank"];
+
+/* ---------- state ---------- */
+let txs = [];               // {id, amount, cat, note, method, ts, status}
+let shortcuts = DEFAULT_SHORTCUTS.slice();
+let tab = "pay";
+let monthOffset = 0;
+let mode = "local";         // "db" or "local"
+let txCol = null, settingsRef = null, dbRef = null;
+let pendingCheck = null;    // id of tx awaiting "did it go through?"
+let awayAt = 0;
+
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rwf = n => "RWF " + Math.round(n||0).toLocaleString("en-US");
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const dayKey = ts => { const d=new Date(ts); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const fields = tpl => [...new Set((tpl.match(/\{(\w+)\}/g)||[]).map(x=>x.slice(1,-1)))];
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+/* ---------- storage ---------- */
+async function saveTx(t){
+  const i = txs.findIndex(x=>x.id===t.id);
+  if(i>=0) txs[i]=t; else txs.push(t);
+  render();
+  if(NATIVE){
+    try{
+      if(counted(t) && dayKey(t.ts)===dayKey(Date.now())) NATIVE.recordedOn(dayKey(Date.now()));
+      if(t.status==="pending") NATIVE.expect(String(t.amount));
+    }catch(e){}
+  }
+  if(mode==="db"){
+    try{ const {id, ...body} = t; await txCol.doc(id).set(body); }
+    catch(e){ toast("Couldn't save — check your connection"); }
+  } else lsSet("andika_tx", txs);
+}
+async function deleteTx(id){
+  txs = txs.filter(x=>x.id!==id); render();
+  if(mode==="db"){ try{ await txCol.doc(id).delete(); }catch(e){ toast("Couldn't delete"); } }
+  else lsSet("andika_tx", txs);
+}
+async function saveShortcuts(){
+  render();
+  if(mode==="db"){ try{ await settingsRef.set({shortcuts}); }catch(e){ toast("Couldn't save settings"); } }
+  else lsSet("andika_sc", shortcuts);
+}
+
+async function initStorage(){
+  txs = lsGet("andika_tx", []);
+  shortcuts = lsGet("andika_sc", DEFAULT_SHORTCUTS.slice());
+  render();
+  if(NATIVE){ maybeWelcome(); return; }
+  let db=null, user=null, id=null;
+  try{ db = await claude.use("db"); user = await claude.use("user"); id = user ? await user.id() : null; }catch(e){}
+  if(!db || !id){ showBanner("Saving on this phone only. Open Andika in the Claude app while signed in to keep your records safe in your account."); return; }
+  dbRef = db;
+  const base = "data/users/" + id;
+  settingsRef = db.doc(base + "/settings");
+  txCol = db.doc(base + "/profile").collection("tx");
+  mode = "db";
+  try{
+    const s = await settingsRef.get();
+    if(s.exists && Array.isArray(s.data().shortcuts)) shortcuts = s.data().shortcuts.map(x=>({...x}));
+  }catch(e){}
+  const timer = setTimeout(()=>showBanner("Can't reach your saved records yet — they may be out of date."), 10000);
+  // move anything saved on this phone before into the account, once
+  const local = lsGet("andika_tx", []);
+  txCol.onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){ clearTimeout(timer); hideBanner(); }
+    txs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    render();
+  }, err=>{ clearTimeout(timer); showBanner("Your saved records couldn't load right now."); });
+  if(local.length){
+    for(const t of local){ const {id:tid, ...body}=t; try{ await txCol.doc(tid).set(body); }catch(e){} }
+    lsSet("andika_tx", []);
+  }
+}
+function showBanner(t){ const b=$("#banner"); b.textContent=t; b.style.display="block"; }
+function hideBanner(){ $("#banner").style.display="none"; }
+
+/* ---------- stats ---------- */
+function streak(){
+  const days = new Set(txs.filter(t=>counted(t)).map(t=>dayKey(t.ts)));
+  let n=0; const d=new Date();
+  if(!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while(days.has(dayKey(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function sumWhere(fn){ return txs.filter(t=>counted(t) && fn(t)).reduce((a,t)=>a+(+t.amount||0),0); }
+
+/* ---------- render ---------- */
+function render(){
+  const s = streak();
+  $("#streak").textContent = "🔥 " + s + (s===1?" day":" days");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
+  if(tab==="pay") renderPay(); else if(tab==="log") renderLog(); else renderSettings();
+}
+
+function renderPay(){
+  const now = new Date();
+  const today = dayKey(now);
+  const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+  const mStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const tToday = sumWhere(t=>dayKey(t.ts)===today);
+  const tWeek = sumWhere(t=>t.ts>=weekStart.getTime());
+  const tMonth = sumWhere(t=>t.ts>=mStart);
+  const recordedToday = txs.some(t=>dayKey(t.ts)===today);
+  const pend = txs.filter(t=>t.status==="pending");
+  $("#view").innerHTML = `
+    <div class="hero">
+      <small>Spent this month</small>
+      <div class="big">${rwf(tMonth)}</div>
+      <div class="row"><div>Today<b>${rwf(tToday)}</b></div><div>This week<b>${rwf(tWeek)}</b></div></div>
+    </div>
+    ${txs.some(t=>t.status==="review")?`<div class="nudge">📩 ${txs.filter(t=>t.status==="review").length} MoMo payment${txs.filter(t=>t.status==="review").length>1?"s":""} noticed from SMS<button data-act="review">Categorize</button></div>`:""}
+    ${pend.length?`<div class="nudge">⏳ ${pend.length} payment${pend.length>1?"s":""} waiting for confirmation<button data-act="pending">Review</button></div>`:""}
+    ${!recordedToday && now.getHours()>=12?`<div class="nudge">✍️ Nothing recorded today. Any cash spent?<button data-act="quick">Add it</button></div>`:""}
+    <h2>Pay with MoMo</h2>
+    <div class="grid">
+      ${shortcuts.map(sc=>`<button class="tile" data-sc="${esc(sc.id)}"><span class="ic">${esc(sc.ic||"📲")}</span><span><div class="nm">${esc(sc.name)}</div><div class="cd">${esc(sc.tpl)}</div></span></button>`).join("")}
+    </div>
+    <button class="quick" data-act="quick">＋ Record cash, card or other spending</button>
+  `;
+}
+
+function renderLog(){
+  const now = new Date();
+  const m = new Date(now.getFullYear(), now.getMonth()+monthOffset, 1);
+  const mEnd = new Date(m.getFullYear(), m.getMonth()+1, 1);
+  const list = txs.filter(t=>t.ts>=m.getTime() && t.ts<mEnd.getTime()).sort((a,b)=>b.ts-a.ts);
+  const done = list.filter(t=>counted(t));
+  const total = done.reduce((a,t)=>a+(+t.amount||0),0);
+  const byCat = {}; done.forEach(t=>byCat[t.cat]=(byCat[t.cat]||0)+(+t.amount||0));
+  const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const max = cats.length?cats[0][1]:1;
+  const groups = {}; list.forEach(t=>{ (groups[dayKey(t.ts)] ||= []).push(t); });
+  $("#view").innerHTML = `
+    <div class="monthnav">
+      <button data-act="prev">‹</button>
+      <b>${m.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</b>
+      <button data-act="next" ${monthOffset>=0?"disabled style='opacity:.3'":""}>›</button>
+    </div>
+    <div class="hero"><small>Total spent · ${done.length} record${done.length===1?"":"s"}</small><div class="big" style="margin-bottom:0">${rwf(total)}</div></div>
+    ${cats.length?`<div class="card">${cats.map(([k,v])=>`
+      <div class="bar"><div class="lb"><span>${catEmoji(k)} ${esc(k)}</span><b>${rwf(v)}</b></div>
+      <div class="tr"><div class="fl" style="width:${Math.max(3,v/max*100)}%"></div></div></div>`).join("")}</div>`:""}
+    ${list.length?Object.entries(groups).map(([d,arr])=>{
+      const dd=new Date(arr[0].ts);
+      const label = d===dayKey(Date.now())?"Today":dd.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+      const dayTotal = arr.filter(t=>counted(t)).reduce((a,t)=>a+(+t.amount||0),0);
+      return `<div class="day"><span>${label}</span><span>${rwf(dayTotal)}</span></div>` + arr.map(txRow).join("");
+    }).join(""):`<div class="empty">No spending recorded for this month yet.</div>`}
+  `;
+}
+function txRow(t){
+  const time = new Date(t.ts).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  return `<button class="tx" data-tx="${esc(t.id)}"><span class="em">${catEmoji(t.cat)}</span>
+    <span class="mid"><div class="t1">${esc(t.note||t.cat)}${t.status==="pending"?'<span class="pill">pending</span>':""}${t.status==="review"?'<span class="pill">to categorize</span>':""}</div>
+    <div class="t2">${esc(t.cat)} · ${esc(t.method||"")} · ${time}</div></span>
+    <span class="amt">${rwf(t.amount)}</span></button>`;
+}
+
+function renderSettings(){
+  $("#view").innerHTML = `
+    <h2>MoMo shortcuts</h2>
+    <div class="card">
+      ${shortcuts.map(sc=>`<div class="set-row"><span style="font-size:20px">${esc(sc.ic||"📲")}</span>
+        <div class="mid"><b>${esc(sc.name)}</b><div class="cd">${esc(sc.tpl)}</div></div>
+        <button data-edit="${esc(sc.id)}">Edit</button></div>`).join("")}
+    </div>
+    <button class="quick" data-act="newsc">＋ Add a shortcut (e.g. a person you pay often)</button>
+    <p class="hint">Codes use placeholders like {phone}, {code}, {meter}, {amount} — Andika asks for each one. MoMo menus change from time to time, so dial each shortcut once with a small amount to make sure it matches your line, and edit it here if not.</p>
+    ${NATIVE?phoneSettings():""}
+    <h2>Your data</h2>
+    <div class="card">
+      <div class="set-row"><div class="mid"><b>Export to spreadsheet</b><div class="cd" style="font-family:inherit">All ${txs.length} records as CSV</div></div><button data-act="export">Export</button></div>
+      <div class="set-row"><div class="mid"><b>Where it's saved</b><div class="cd" style="font-family:inherit">${NATIVE?"On this phone, included in your Google backup. Export now and then to keep a copy.":(mode==="db"?"Private to your Claude account — syncs across your devices":"On this phone only")}</div></div></div>
+      <div class="set-row"><div class="mid"><b>Reset shortcuts</b><div class="cd" style="font-family:inherit">Restore the default MoMo codes</div></div><button data-act="resetsc">Reset</button></div>
+    </div>
+  `;
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){ $("#sheet").innerHTML = html; $("#scrim").classList.add("open"); }
+function closeSheet(){ $("#scrim").classList.remove("open"); }
+$("#scrim").addEventListener("click", e=>{ if(e.target.id==="scrim") closeSheet(); });
+
+function catChips(sel){ return `<div class="chips" id="cats">${CATS.map(c=>`<button type="button" class="chip ${c.k===sel?"on":""}" data-cat="${esc(c.k)}">${c.e} ${esc(c.k)}</button>`).join("")}</div>`; }
+function methodChips(sel){ return `<div class="chips" id="methods">${METHODS.map(m=>`<button type="button" class="chip ${m===sel?"on":""}" data-method="${m}">${m}</button>`).join("")}</div>`; }
+function wireChips(){
+  $("#sheet").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ $("#sheet").querySelectorAll("[data-cat]").forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
+  $("#sheet").querySelectorAll("[data-method]").forEach(b=>b.onclick=()=>{ $("#sheet").querySelectorAll("[data-method]").forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
+}
+const selCat = () => ($("#sheet .chip.on[data-cat]")||{}).dataset?.cat || "Other";
+const selMethod = () => ($("#sheet .chip.on[data-method]")||{}).dataset?.method || "Cash";
+const amtVal = id => +(($(id)?.value||"").replace(/[^\d.]/g,"")) || 0;
+function fmtAmountInput(el){ el.addEventListener("input",()=>{ const d=el.value.replace(/[^\d]/g,""); el.value = d?(+d).toLocaleString("en-US"):""; }); }
+
+/* Step 1: shortcut form */
+function startShortcut(sc){
+  const f = fields(sc.tpl).filter(x=>x!=="amount");
+  openSheet(`
+    <h3>${esc(sc.ic||"")} ${esc(sc.name)}</h3>
+    <p class="sub">${esc(sc.tpl)}</p>
+    <form id="scform">
+      ${f.map(k=>`<label>${esc(FIELD_LABELS[k]||k)}</label><input name="${esc(k)}" inputmode="${k==="phone"||k==="code"||k==="meter"||k==="billid"?"numeric":"text"}" required autocomplete="off">`).join("")}
+      <label>Amount (RWF)</label><input id="amt" class="amtin" inputmode="numeric" placeholder="0" ${sc.id==="menu"?"":"required"} autocomplete="off">
+      <button class="btn pri" type="submit">Continue</button>
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+    </form>`);
+  fmtAmountInput($("#amt"));
+  $("#sheet [data-close]").onclick = closeSheet;
+  setTimeout(()=>($("#scform input")||{}).focus?.(),150);
+  $("#scform").onsubmit = e=>{
+    e.preventDefault();
+    const vals = {}; f.forEach(k=>vals[k]=e.target.elements[k].value.trim().replace(/\s+/g,""));
+    vals.amount = String(amtVal("#amt")||"");
+    let code = sc.tpl; Object.entries(vals).forEach(([k,v])=>code=code.split("{"+k+"}").join(v));
+    const target = vals.phone||vals.code||vals.meter||vals.billid||"";
+    askToRecord(sc, code, amtVal("#amt"), target);
+  };
+}
+
+/* Step 2: the habit prompt */
+function askToRecord(sc, code, amount, target){
+  const note = sc.name + (target?(" · "+target):"");
+  openSheet(`
+    <div class="ask"><span style="font-size:24px">✍️</span><div><b>Record this payment?</b>It takes 3 seconds and keeps your spending honest.</div></div>
+    <label>Amount (RWF)</label><input id="ramt" class="amtin" inputmode="numeric" value="${amount?amount.toLocaleString("en-US"):""}" placeholder="0">
+    <label>What is it for?</label>${catChips(sc.cat)}
+    <label>Note</label><input id="rnote" value="${esc(note)}" placeholder="e.g. groceries at Simba">
+    <button class="btn pri" id="recpay">Record & pay</button>
+    <button class="btn ghost" id="skippay">Pay without recording</button>`);
+  fmtAmountInput($("#ramt")); wireChips();
+  $("#recpay").onclick = async ()=>{
+    const amt = amtVal("#ramt");
+    if(!amt){ $("#ramt").focus(); toast("Enter the amount"); return; }
+    const t = {id:uid(), amount:amt, cat:selCat(), note:$("#rnote").value.trim(), method:"MoMo", ts:Date.now(), status:"pending", code};
+    await saveTx(t);
+    pendingCheck = t.id;
+    showDial(code, true);
+  };
+  $("#skippay").onclick = ()=>{ pendingCheck=null; showDial(code, false); };
+}
+
+/* Step 3: dial */
+function showDial(code, recorded){
+  const href = "tel:" + code.replace(/#/g,"%23");
+  openSheet(`
+    <h3>${recorded?"Recorded ✓ Now pay":"Ready to pay"}</h3>
+    <p class="sub">Tap Dial, then enter your MoMo PIN on your phone.</p>
+    <div class="ussd">${esc(code)}</div>
+    <a class="btn pri" id="dial" href="${esc(href)}">📞 Dial now</a>
+    <button class="btn sec" id="copy">Copy code</button>
+    <p class="hint">${NATIVE?"":"If Dial doesn't open your phone app, tap Copy code, open your phone's dialer, paste and call. "}${recorded?(NATIVE?"When MoMo's confirmation SMS arrives, Andika marks it paid for you.":"When you come back, Andika will ask if the payment went through."):""}</p>
+    <button class="btn ghost" data-close>Close</button>`);
+  $("#sheet [data-close]").onclick = ()=>{ closeSheet(); if(recorded) confirmPending(pendingCheck); };
+  $("#dial").onclick = (e)=>{ awayAt = Date.now(); if(NATIVE){ e.preventDefault(); NATIVE.dial(code); } };
+  $("#copy").onclick = async ()=>{ awayAt = Date.now(); try{ await navigator.clipboard.writeText(code); toast("Code copied"); }catch(e){ toast("Press and hold the code to copy it"); } };
+}
+
+/* Step 4: did it go through? */
+function confirmPending(id){
+  const t = txs.find(x=>x.id===id);
+  if(!t || counted(t)){ closeSheet(); return; }
+  openSheet(`
+    <h3>Did the payment go through?</h3>
+    <p class="sub">${esc(t.note||t.cat)} · <b>${rwf(t.amount)}</b></p>
+    <label>Correct the amount if needed</label><input id="camt" class="amtin" inputmode="numeric" value="${(+t.amount).toLocaleString("en-US")}">
+    <div class="two"><button class="btn pri" id="yes">Yes, paid</button><button class="btn danger" id="no">No, cancel it</button></div>
+    <button class="btn ghost" data-close>Ask me later</button>`);
+  fmtAmountInput($("#camt"));
+  $("#yes").onclick = async ()=>{ const a=amtVal("#camt")||t.amount; pendingCheck=null; closeSheet(); await saveTx({...t, amount:a, status:"done"}); toast("Saved ✓"); };
+  $("#no").onclick = async ()=>{ pendingCheck=null; closeSheet(); await deleteTx(t.id); toast("Removed"); };
+  $("#sheet [data-close]").onclick = ()=>{ pendingCheck=null; closeSheet(); };
+}
+function reviewPending(){
+  const p = txs.filter(t=>t.status==="pending").sort((a,b)=>b.ts-a.ts);
+  if(p.length) confirmPending(p[0].id);
+}
+document.addEventListener("visibilitychange", ()=>{
+  if(!NATIVE && document.visibilityState==="visible" && pendingCheck && awayAt && Date.now()-awayAt>3000){
+    awayAt = 0; confirmPending(pendingCheck);
+  }
+});
+
+/* Quick add / edit */
+function editTx(t){
+  const isNew = !t;
+  t = t || {id:uid(), amount:0, cat:"Food & groceries", note:"", method:"Cash", ts:Date.now(), status:"done"};
+  const local = new Date(t.ts - new Date(t.ts).getTimezoneOffset()*60000).toISOString().slice(0,16);
+  openSheet(`
+    <h3>${isNew?"Record spending":"Edit record"}</h3>
+    <p class="sub">${isNew?"For anything you paid outside the MoMo shortcuts.":""}</p>
+    <label>Amount (RWF)</label><input id="eamt" class="amtin" inputmode="numeric" value="${t.amount?(+t.amount).toLocaleString("en-US"):""}" placeholder="0">
+    <label>Paid with</label>${methodChips(t.method||"Cash")}
+    <label>What is it for?</label>${catChips(t.cat)}
+    <label>Note</label><input id="enote" value="${esc(t.note)}" placeholder="e.g. moto to work">
+    <label>When</label><input id="edate" type="datetime-local" value="${local}">
+    <button class="btn pri" id="esave">Save</button>
+    ${!isNew && t.status==="pending"?'<button class="btn sec" id="econf">Mark as paid</button>':""}
+    ${isNew?"":'<button class="btn danger" id="edel">Delete</button>'}
+    <button class="btn ghost" data-close>Cancel</button>`);
+  fmtAmountInput($("#eamt")); wireChips();
+  if(isNew) setTimeout(()=>$("#eamt").focus(),150);
+  $("#sheet [data-close]").onclick = closeSheet;
+  $("#esave").onclick = async ()=>{
+    const amt = amtVal("#eamt"); if(!amt){ toast("Enter the amount"); return; }
+    const ts = new Date($("#edate").value).getTime() || Date.now();
+    closeSheet(); await saveTx({...t, amount:amt, cat:selCat(), method:selMethod(), note:$("#enote").value.trim(), ts});
+    toast("Saved ✓");
+  };
+  if($("#econf")) $("#econf").onclick = async ()=>{ closeSheet(); await saveTx({...t, status:"done"}); toast("Marked as paid"); };
+  if($("#edel")) $("#edel").onclick = async ()=>{ closeSheet(); await deleteTx(t.id); toast("Deleted"); };
+}
+
+/* Shortcut editor */
+function editShortcut(sc){
+  const isNew = !sc;
+  sc = sc || {id:uid(), name:"", ic:"📲", tpl:"*182*1*1*0788000000*{amount}#", cat:"Family & friends"};
+  openSheet(`
+    <h3>${isNew?"New shortcut":"Edit shortcut"}</h3>
+    <label>Name</label><input id="sname" value="${esc(sc.name)}" placeholder="e.g. Send to Mama">
+    <label>Icon (one emoji)</label><input id="sic" value="${esc(sc.ic)}" maxlength="4">
+    <label>USSD code</label><input id="stpl" value="${esc(sc.tpl)}" style="font-family:ui-monospace,monospace">
+    <p class="hint">Use {amount} where the amount goes, and {phone}, {code}, {meter} or any {word} for details Andika should ask each time. Put a fixed number straight in the code for people you pay often.</p>
+    <label>Usual category</label>${catChips(sc.cat)}
+    <button class="btn pri" id="ssave">Save shortcut</button>
+    ${isNew?"":'<button class="btn danger" id="sdel">Remove</button>'}
+    <button class="btn ghost" data-close>Cancel</button>`);
+  wireChips();
+  $("#sheet [data-close]").onclick = closeSheet;
+  $("#ssave").onclick = async ()=>{
+    const n = $("#sname").value.trim(), tp = $("#stpl").value.trim();
+    if(!n || !/^\*.*#$/.test(tp)){ toast("Add a name and a code like *182*…#"); return; }
+    const upd = {...sc, name:n, ic:$("#sic").value.trim()||"📲", tpl:tp, cat:selCat()};
+    const i = shortcuts.findIndex(x=>x.id===sc.id);
+    if(i>=0) shortcuts[i]=upd; else shortcuts.push(upd);
+    closeSheet(); await saveShortcuts(); toast("Shortcut saved");
+  };
+  if($("#sdel")) $("#sdel").onclick = async ()=>{ shortcuts = shortcuts.filter(x=>x.id!==sc.id); closeSheet(); await saveShortcuts(); };
+}
+
+/* Export */
+async function exportCSV(){
+  const rows = [["Date","Time","Amount (RWF)","Category","Paid with","Note","Status"]];
+  txs.slice().sort((a,b)=>a.ts-b.ts).forEach(t=>{ const d=new Date(t.ts);
+    rows.push([dayKey(t.ts), d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}), t.amount, t.cat, t.method||"", t.note||"", t.status==="pending"?"pending":"paid"]); });
+  const csv = rows.map(r=>r.map(v=>{ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(",")).join("\n");
+  if(NATIVE){ const ok = NATIVE.saveCsv("andika-spending-"+dayKey(Date.now())+".csv", csv); if(!ok) NATIVE.share("Andika spending", csv); return; }
+  let dl=null; try{ dl = await claude.use("downloads"); }catch(e){}
+  if(dl){ try{ await dl.save({filename:"andika-spending-"+dayKey(Date.now())+".csv", data:csv}); return; }catch(e){} }
+  try{ await navigator.clipboard.writeText(csv); toast("Copied — paste into a spreadsheet"); }catch(e){ toast("Export isn't available here"); }
+}
+
+/* ---------- Android extras ---------- */
+const GUESS = [
+  [/simba|supermarket|market|nakumatt|grocer|shop|boutique|alimentation/i,"Food & groceries"],
+  [/bus|taxi|moto|yego|move|transport|fuel|petrol|engen|merez/i,"Transport"],
+  [/airtime|bundle|internet|data|mtn|airtel|canal|dstv|startimes/i,"Airtime & data"],
+  [/eucl|electric|cash ?power|wasac|water/i,"Utilities"],
+  [/school|ecole|college|academy/i,"School & kids"],
+  [/pharma|clinic|hospital|hopital|health|sante/i,"Health"],
+  [/irembo|rra|tax/i,"Fees & taxes"],
+  [/restaurant|cafe|coffee|bar|resto|pizza|kfc|java/i,"Eating out"],
+  [/hardware|cement|ciment|quincaillerie|construction/i,"Construction"]
+];
+const guessCat = payee => { for(const [re,c] of GUESS) if(re.test(payee||"")) return c; return payee?"Family & friends":"Other"; };
+
+function perms(){ try{ return JSON.parse(NATIVE.permStatus()); }catch(e){ return {sms:false,call:false,notif:false}; } }
+function phoneSettings(){
+  const p = perms(); let r={on:true,hour:20}; try{ r=JSON.parse(NATIVE.reminder()); }catch(e){}
+  const all = p.sms && p.call && p.notif;
+  return `<h2>On this phone</h2><div class="card">
+    <div class="set-row"><div class="mid"><b>Notice MoMo SMS</b><div class="cd" style="font-family:inherit">${p.sms?"On: Andika asks you to record payments made anywhere":"Off: turn on so payments outside Andika get noticed"}</div></div>${p.sms?"✅":'<button data-act="perms">Turn on</button>'}</div>
+    <div class="set-row"><div class="mid"><b>Dial directly</b><div class="cd" style="font-family:inherit">${p.call?"On: shortcuts dial straight away":"Off: the dialer opens and you tap call"}</div></div>${p.call?"✅":'<button data-act="perms">Turn on</button>'}</div>
+    <div class="set-row"><div class="mid"><b>Notifications</b><div class="cd" style="font-family:inherit">${p.notif?"On":"Off: needed for the record prompts and reminder"}</div></div>${p.notif?"✅":'<button data-act="perms">Turn on</button>'}</div>
+    <div class="set-row"><div class="mid"><b>Evening reminder</b><div class="cd" style="font-family:inherit">${r.on?"On: 8 pm, only on days with nothing recorded":"Off"}</div></div><button data-act="remind">${r.on?"Turn off":"Turn on"}</button></div>
+  </div>${all?"":'<p class="hint">If a Turn on button does nothing, Android has stopped asking: it opens Andika\'s settings, where you allow SMS, Phone and Notifications.</p>'}`;
+}
+
+function maybeWelcome(){
+  if(lsGet("andika_welcomed", false)) return;
+  openSheet(`
+    <h3>Welcome to Andika ✍️</h3>
+    <p class="sub">Pay with MoMo shortcuts, and record every payment as you go.</p>
+    <div class="ask"><span style="font-size:22px">📩</span><div><b>Notice payments automatically</b>When a MoMo payment SMS arrives (even one you made outside Andika), you get a prompt to record it.</div></div>
+    <div class="ask"><span style="font-size:22px">📞</span><div><b>Dial in one tap</b>Shortcuts dial the USSD code straight away, like Nokanda.</div></div>
+    <p class="hint">Andika reads only payment SMS on your phone. Nothing is sent anywhere.</p>
+    <button class="btn pri" id="wok">Allow SMS, calls & notifications</button>
+    <button class="btn ghost" id="wlater">Not now</button>`);
+  $("#wok").onclick = ()=>{ lsSet("andika_welcomed", true); closeSheet(); NATIVE.requestPerms(); };
+  $("#wlater").onclick = ()=>{ lsSet("andika_welcomed", true); closeSheet(); };
+}
+
+function pullDetected(){
+  if(!NATIVE) return;
+  let items=[]; try{ items = JSON.parse(NATIVE.takeDetected()||"[]"); }catch(e){}
+  for(const d of items){
+    if(txs.some(t=>t.id===d.id)) continue;
+    // Was this a payment Andika started? Then just confirm it.
+    const p = txs.filter(t=>t.status==="pending" && +t.amount===+d.amount && Math.abs(d.ts-t.ts)<20*60*1000).sort((a,b)=>b.ts-a.ts)[0];
+    if(p){
+      saveTx({...p, status:"done"});
+      if(pendingCheck===p.id){ pendingCheck=null; awayAt=0; closeSheet(); }
+      toast("MoMo confirmed: "+rwf(d.amount)+" recorded ✓");
+      continue;
+    }
+    saveTx({id:d.id, amount:+d.amount, cat:guessCat(d.payee), note:d.payee||"MoMo payment", method:"MoMo", ts:+d.ts||Date.now(), status:"review"});
+  }
+}
+window.onNativeResume = function(){
+  pullDetected();
+  if(pendingCheck && awayAt && Date.now()-awayAt>3000){ awayAt=0; setTimeout(()=>{ if(pendingCheck) confirmPending(pendingCheck); }, 1500); }
+  render();
+};
+window.onNativeOpen = function(kind){
+  pullDetected();
+  if(kind==="review") reviewDetected(); else if(kind==="quick") editTx(null);
+};
+window.onNativeBack = function(){
+  if($("#scrim").classList.contains("open")){ closeSheet(); return true; }
+  if(tab!=="pay"){ tab="pay"; render(); return true; }
+  return false;
+};
+
+function reviewDetected(id){
+  const list = txs.filter(t=>t.status==="review").sort((a,b)=>b.ts-a.ts);
+  const t = (id && list.find(x=>x.id===id)) || list[0];
+  if(!t){ closeSheet(); return; }
+  const when = new Date(t.ts).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  openSheet(`
+    <div class="ask"><span style="font-size:24px">📩</span><div><b>MoMo payment noticed</b>${esc(when)}${list.length>1?` · ${list.length} to go`:""}</div></div>
+    <label>Amount (RWF)</label><input id="damt" class="amtin" inputmode="numeric" value="${(+t.amount).toLocaleString("en-US")}">
+    <label>What was it for?</label>${catChips(t.cat)}
+    <label>Note</label><input id="dnote" value="${esc(t.note)}">
+    <button class="btn pri" id="drec">Record it</button>
+    <button class="btn sec" id="dno">Not spending: skip it</button>
+    <button class="btn ghost" data-close>Later</button>`);
+  fmtAmountInput($("#damt")); wireChips();
+  $("#sheet [data-close]").onclick = closeSheet;
+  $("#drec").onclick = async ()=>{
+    const a = amtVal("#damt")||t.amount;
+    await saveTx({...t, amount:a, cat:selCat(), note:$("#dnote").value.trim(), status:"done"});
+    toast("Recorded ✓");
+    if(txs.some(x=>x.status==="review")) reviewDetected(); else closeSheet();
+  };
+  $("#dno").onclick = async ()=>{
+    await deleteTx(t.id);
+    if(txs.some(x=>x.status==="review")) reviewDetected(); else closeSheet();
+  };
+}
+
+/* ---------- events ---------- */
+document.querySelector("nav").addEventListener("click", e=>{ const b=e.target.closest("[data-tab]"); if(!b) return; tab=b.dataset.tab; window.scrollTo(0,0); render(); });
+$("#view").addEventListener("click", e=>{
+  const sc = e.target.closest("[data-sc]"); if(sc){ startShortcut(shortcuts.find(x=>x.id===sc.dataset.sc)); return; }
+  const tx = e.target.closest("[data-tx]"); if(tx){ const t=txs.find(x=>x.id===tx.dataset.tx); if(t && t.status==="review") reviewDetected(t.id); else editTx(t); return; }
+  const ed = e.target.closest("[data-edit]"); if(ed){ editShortcut(shortcuts.find(x=>x.id===ed.dataset.edit)); return; }
+  const a = e.target.closest("[data-act]"); if(!a) return;
+  const act = a.dataset.act;
+  if(act==="quick") editTx(null);
+  else if(act==="pending") reviewPending();
+  else if(act==="review") reviewDetected();
+  else if(act==="perms"){ if(NATIVE) NATIVE.requestPerms(); }
+  else if(act==="remind"){ if(NATIVE){ const r=JSON.parse(NATIVE.reminder()); NATIVE.setReminder(!r.on, r.hour); render(); } }
+  else if(act==="prev"){ monthOffset--; render(); }
+  else if(act==="next"){ if(monthOffset<0){ monthOffset++; render(); } }
+  else if(act==="newsc") editShortcut(null);
+  else if(act==="export") exportCSV();
+  else if(act==="resetsc"){ shortcuts = DEFAULT_SHORTCUTS.slice(); saveShortcuts(); toast("Shortcuts reset"); }
+});
+
+render();
+initStorage();
+</script>
+</body>
+</html>
