@@ -1,0 +1,234 @@
+name: Build Andika APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Put the files in their folders
+        run: |
+          set -e
+          P=proj
+          K=$P/app/src/main/java/rw/andika/app
+          mkdir -p $K $P/app/src/main/assets
+          # Kotlin code and the app screens, wherever they were uploaded
+          find . -path ./proj -prune -o -path ./.git -prune -o -name '*.kt' -print -exec cp {} $K/ \;
+          cp "$(find . -path ./proj -prune -o -name index.html -print | head -1)" $P/app/src/main/assets/index.html
+          ls $K | grep -q MainActivity.kt || { echo 'MainActivity.kt is missing'; exit 1; }
+          # Small setup files are written here, so name clashes on upload don't matter
+          cat > $P/settings.gradle.kts <<'EOF_0'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "Andika"
+          include(":app")
+          EOF_0
+          cat > $P/build.gradle.kts <<'EOF_1'
+          plugins {
+              id("com.android.application") version "8.5.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+          }
+          EOF_1
+          cat > $P/gradle.properties <<'EOF_2'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          kotlin.code.style=official
+          android.nonTransitiveRClass=true
+          EOF_2
+          mkdir -p $P/app
+          cat > $P/app/build.gradle.kts <<'EOF_3'
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+
+          android {
+              namespace = "rw.andika.app"
+              compileSdk = 34
+
+              defaultConfig {
+                  applicationId = "rw.andika.app"
+                  minSdk = 26
+                  targetSdk = 34
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          EOF_3
+          mkdir -p $P/app/src/main
+          cat > $P/app/src/main/AndroidManifest.xml <<'EOF_4'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+              <!-- Notice MoMo confirmation SMS so Andika can ask you to record the payment -->
+              <uses-permission android:name="android.permission.RECEIVE_SMS" />
+              <!-- Dial USSD shortcuts directly (like Nokanda) -->
+              <uses-permission android:name="android.permission.CALL_PHONE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <!-- Keep the evening reminder after the phone restarts -->
+              <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+
+                  <receiver
+                      android:name=".SmsReceiver"
+                      android:exported="true"
+                      android:permission="android.permission.BROADCAST_SMS">
+                      <intent-filter android:priority="999">
+                          <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+                      </intent-filter>
+                  </receiver>
+
+                  <receiver
+                      android:name=".ReminderReceiver"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.BOOT_COMPLETED" />
+                      </intent-filter>
+                  </receiver>
+              </application>
+          </manifest>
+          EOF_4
+          mkdir -p $P/app/src/main/res/values
+          cat > $P/app/src/main/res/values/strings.xml <<'EOF_5'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">Andika</string>
+          </resources>
+          EOF_5
+          mkdir -p $P/app/src/main/res/values
+          cat > $P/app/src/main/res/values/colors.xml <<'EOF_6'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="green">#1F5E46</color>
+              <color name="bg">#F6F3EC</color>
+              <color name="amber">#F2B632</color>
+          </resources>
+          EOF_6
+          mkdir -p $P/app/src/main/res/values
+          cat > $P/app/src/main/res/values/themes.xml <<'EOF_7'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+                  <item name="android:statusBarColor">@color/green</item>
+                  <item name="android:navigationBarColor">#FFFFFF</item>
+                  <item name="android:windowBackground">@color/bg</item>
+                  <item name="android:colorAccent">@color/green</item>
+              </style>
+          </resources>
+          EOF_7
+          mkdir -p $P/app/src/main/res/values-v27
+          cat > $P/app/src/main/res/values-v27/themes.xml <<'EOF_8'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+                  <item name="android:statusBarColor">@color/green</item>
+                  <item name="android:navigationBarColor">#FFFFFF</item>
+                  <item name="android:windowLightNavigationBar">true</item>
+                  <item name="android:windowBackground">@color/bg</item>
+                  <item name="android:colorAccent">@color/green</item>
+              </style>
+          </resources>
+          EOF_8
+          mkdir -p $P/app/src/main/res/mipmap-anydpi-v26
+          cat > $P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF_9'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/green" />
+              <foreground android:drawable="@drawable/ic_launcher_fg" />
+          </adaptive-icon>
+          EOF_9
+          mkdir -p $P/app/src/main/res/drawable
+          cat > $P/app/src/main/res/drawable/ic_launcher_fg.xml <<'EOF_10'
+          <?xml version="1.0" encoding="utf-8"?>
+          <!-- A notebook page with a pen stroke and an amber coin -->
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#FFFFFF"
+                  android:pathData="M38,32h26a6,6 0,0 1,6 6v32a6,6 0,0 1,-6 6h-26a6,6 0,0 1,-6 -6v-32a6,6 0,0 1,6 -6z" />
+              <path android:fillColor="#1F5E46"
+                  android:pathData="M40,44h22v3h-22z M40,52h22v3h-22z M40,60h14v3h-14z" />
+              <path android:fillColor="#F2B632"
+                  android:pathData="M70,64m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0" />
+              <path android:fillColor="#1F5E46"
+                  android:pathData="M66,64l3,3l6,-6l-1.6,-1.6l-4.4,4.4l-1.4,-1.4z" />
+          </vector>
+          EOF_10
+          mkdir -p $P/app/src/main/res/drawable
+          cat > $P/app/src/main/res/drawable/ic_stat.xml <<'EOF_11'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp"
+              android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFFFF"
+                  android:pathData="M6,3h9l5,5v11a2,2 0,0 1,-2 2H6a2,2 0,0 1,-2 -2V5a2,2 0,0 1,2 -2zM7,11v2h10v-2zM7,15v2h7v-2z" />
+          </vector>
+          EOF_11
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Build the APK
+        working-directory: proj
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Andika-APK
+          path: proj/app/build/outputs/apk/debug/app-debug.apk
